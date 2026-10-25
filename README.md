@@ -6,7 +6,7 @@ NestJS REST + GraphQL API, Prisma ORM, PostgreSQL, and opaque server-side admin 
 1. Copy `.env.example` to `.env`; set `DATABASE_URL`, `FRONTEND_URL`, and a random `SESSION_HASH_SECRET` (at least 32 characters).
 2. Run `npm install`, then `npx prisma generate`.
 3. Apply the schema with `npx prisma migrate dev`.
-4. Set `ADMIN_EMAIL` and `ADMIN_INITIAL_PASSWORD` (14+ characters), then start the API. The bootstrap command creates the admin only if that email does not already exist.
+4. Set `ADMIN_EMAIL` and `ADMIN_INITIAL_PASSWORD` (14+ characters), then start the API. The bootstrap command creates the initial admin only when the database has no administrator account.
 5. Run `npm run start:dev`.
 
 ## Endpoints
