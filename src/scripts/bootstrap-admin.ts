@@ -12,9 +12,9 @@ async function main() {
   if (password.length < 14) throw new Error('ADMIN_INITIAL_PASSWORD must be at least 14 characters.');
   const prisma = new PrismaClient();
   try {
-    const existing = await prisma.adminUser.findUnique({ where: { email } });
+    const existing = await prisma.adminUser.findFirst({ select: { email: true } });
     if (existing) {
-      console.log('Admin bootstrap skipped: an account already exists for', email);
+      console.log('Admin bootstrap skipped: an administrator already exists.');
       return;
     }
     const passwordHash = await bcrypt.hash(password, 12);
