@@ -12,7 +12,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
-    "admin:create": "node dist/scripts/create-admin.js"
+    "admin:create": "node dist/scripts/create-admin.js",
+    "admin:bootstrap": "node dist/scripts/bootstrap-admin.js"
   },
   "engines": {
     "node": ">=20.19.0"
