@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { createHash, randomBytes } from 'node:crypto';
 import * as bcrypt from 'bcrypt';
 import type { Request, Response } from 'express';
@@ -8,8 +8,14 @@ import { ConfigService } from './config.service';
 const SESSION_TTL_MS = 8 * 60 * 60 * 1000;
 
 @Injectable()
-export class AuthService {
+export class AuthService implements OnModuleInit {
+  private dummyPasswordHash = '';
   constructor(private readonly prisma: PrismaService, private readonly config: ConfigService) {}
+
+  async onModuleInit() {
+    // Generate a valid bcrypt hash so unknown-account logins still incur bcrypt work.
+    this.dummyPasswordHash = await bcrypt.hash(randomBytes(32).toString('hex'), 12);
+  }
 
   private hashToken(token: string) {
     return createHash('sha256').update(token).update(this.config.sessionHashSecret).digest('hex');
@@ -32,8 +38,7 @@ export class AuthService {
     const normalizedEmail = email.trim().toLowerCase();
     const user = await this.prisma.adminUser.findUnique({ where: { email: normalizedEmail } });
     // Keep unknown-account and wrong-password paths close in cost.
-    const dummyHash = '$2b$12$C6UzMDM.H6dfI/f/IKcEe.4VQ7P7gHj3tD9y3s2j7m4c9n2k2Pq6qK';
-    const valid = await bcrypt.compare(password, user?.passwordHash ?? dummyHash).catch(() => false);
+    const valid = await bcrypt.compare(password, user?.passwordHash ?? this.dummyPasswordHash).catch(() => false);
     if (!user || !user.isActive || !valid) return null;
 
     // Rotate the current browser's session to prevent session fixation.
