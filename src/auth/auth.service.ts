@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from './config.service';
-import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import * as bcrypt from 'bcrypt';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import { PrismaService } from '../prisma/prisma.service';
+import { ConfigService } from './config.service';
 
 const SESSION_TTL_MS = 8 * 60 * 60 * 1000;
 
@@ -28,16 +28,16 @@ export class AuthService {
     };
   }
 
-  async login(email: string, password: string, response: Response) {
+  async login(email: string, password: string, req: Request, response: Response) {
     const normalizedEmail = email.trim().toLowerCase();
     const user = await this.prisma.adminUser.findUnique({ where: { email: normalizedEmail } });
-    // Perform a dummy bcrypt comparison for unknown users to reduce timing-based account enumeration.
-    const hash = user?.passwordHash ?? '$2b$12$C6UzMDM.H6dfI/f/IKcEe.4VQ7P7gHj3tD9y3s2j7m4c9n2k2Pq6qK';
-    const valid = await bcrypt.compare(password, hash).catch(() => false);
+    // Keep unknown-account and wrong-password paths close in cost.
+    const dummyHash = '$2b$12$C6UzMDM.H6dfI/f/IKcEe.4VQ7P7gHj3tD9y3s2j7m4c9n2k2Pq6qK';
+    const valid = await bcrypt.compare(password, user?.passwordHash ?? dummyHash).catch(() => false);
     if (!user || !user.isActive || !valid) return null;
 
-    // Rotate sessions: delete any prior session using this browser cookie, then issue a random 256-bit token.
-    const prior = response.req?.cookies?.admin_session;
+    // Rotate the current browser's session to prevent session fixation.
+    const prior = req.cookies?.admin_session;
     if (prior) await this.prisma.adminSession.deleteMany({ where: { tokenHash: this.hashToken(prior) } });
     const token = randomBytes(32).toString('base64url');
     await this.prisma.adminSession.create({
@@ -62,7 +62,8 @@ export class AuthService {
 
   async logout(token: string | undefined, response: Response) {
     if (token) await this.prisma.adminSession.deleteMany({ where: { tokenHash: this.hashToken(token) } });
-    response.clearCookie('admin_session', { ...this.cookieOptions(), maxAge: undefined });
+    const { maxAge: _maxAge, ...options } = this.cookieOptions();
+    response.clearCookie('admin_session', options);
     return { success: true };
   }
 }
