@@ -9,17 +9,20 @@ export class AdminAuthGuard implements CanActivate {
   constructor(private readonly reflector: Reflector, private readonly auth: AuthService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    if (this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [context.getHandler(), context.getClass()])) return true;
-
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [context.getHandler(), context.getClass()]);
     const gql = context.getType<string>() === 'graphql';
-    const req = gql ? GqlExecutionContext.create(context).getContext().req : context.switchToHttp().getRequest();
-    const res = gql ? GqlExecutionContext.create(context).getContext().res : context.switchToHttp().getResponse();
+    const gqlContext = gql ? GqlExecutionContext.create(context).getContext() : undefined;
+    const req = gql ? gqlContext.req : context.switchToHttp().getRequest();
+    const res = gql ? gqlContext.res : context.switchToHttp().getResponse();
 
+    // Check Origin on unsafe methods even for public login endpoints to reduce login-CSRF risk.
     if (req.method && !['GET', 'HEAD', 'OPTIONS'].includes(req.method.toUpperCase())) {
       const origin = req.headers.origin;
       const allowed = (process.env.FRONTEND_URL || 'http://localhost:3000').split(',').map((s) => s.trim());
       if (origin && !allowed.includes(origin)) throw new ForbiddenException('Untrusted request origin');
     }
+
+    if (isPublic) return true;
 
     const token = req.cookies?.admin_session;
     if (!token) throw new UnauthorizedException('Administrator login required');
