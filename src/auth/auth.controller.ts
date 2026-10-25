@@ -5,7 +5,7 @@ import { LoginDto } from './login.dto';
 import { Public } from './public.decorator';
 import { Admin } from './current-admin.decorator';
 
-@Controller('auth')
+@Controller('api/auth')
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
