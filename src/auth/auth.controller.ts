@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res, UnauthorizedException } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './login.dto';
@@ -13,10 +13,8 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() dto: LoginDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const admin = await this.auth.login(dto.email, dto.password, Object.assign(res, { req }));
-    if (!admin) {
-      return { success: false, message: 'Invalid email or password.' };
-    }
+    const admin = await this.auth.login(dto.email, dto.password, req, res);
+    if (!admin) throw new UnauthorizedException('Invalid email or password.');
     return { success: true, admin };
   }
 
