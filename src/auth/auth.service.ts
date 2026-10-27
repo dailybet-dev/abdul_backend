@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, UnauthorizedException, OnModuleInit } from '@nestjs/common';
 import { createHash, randomBytes } from 'node:crypto';
 import * as bcrypt from 'bcrypt';
 import type { Request, Response } from 'express';
@@ -49,7 +49,7 @@ export class AuthService implements OnModuleInit {
       data: { tokenHash: this.hashToken(token), adminId: user.id, expiresAt: new Date(Date.now() + SESSION_TTL_MS) },
     });
     response.cookie('admin_session', token, this.cookieOptions());
-    return { id: user.id, email: user.email };
+    return { id: user.id, email: user.email, displayName: user.displayName };
   }
 
   async validateSession(token: string) {
@@ -62,7 +62,40 @@ export class AuthService implements OnModuleInit {
       return null;
     }
     await this.prisma.adminSession.update({ where: { id: session.id }, data: { lastSeen: new Date() } });
-    return { id: session.admin.id, email: session.admin.email };
+    return { id: session.admin.id, email: session.admin.email, displayName: session.admin.displayName };
+  }
+
+  async updateProfile(adminId: string, displayName: string, email: string) {
+    const normalizedEmail = email.trim().toLowerCase();
+    try {
+      const admin = await this.prisma.adminUser.update({
+        where: { id: adminId },
+        data: { displayName: displayName.trim(), email: normalizedEmail },
+        select: { id: true, displayName: true, email: true, createdAt: true, updatedAt: true },
+      });
+      return admin;
+    } catch (error) {
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
+        throw new ConflictException('That email address is already used by another administrator.');
+      }
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
+        throw new NotFoundException('Administrator account not found.');
+      }
+      throw error;
+    }
+  }
+
+  async changePassword(adminId: string, currentPassword: string, newPassword: string) {
+    const admin = await this.prisma.adminUser.findUnique({ where: { id: adminId } });
+    if (!admin || !admin.isActive) throw new NotFoundException('Administrator account not found.');
+    const matches = await bcrypt.compare(currentPassword, admin.passwordHash).catch(() => false);
+    if (!matches) throw new UnauthorizedException('Current password is incorrect.');
+    if (currentPassword === newPassword) throw new ConflictException('Choose a password you have not used as your current password.');
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+    await this.prisma.$transaction([
+      this.prisma.adminUser.update({ where: { id: adminId }, data: { passwordHash } }),
+      this.prisma.adminSession.deleteMany({ where: { adminId } }),
+    ]);
   }
 
   async logout(token: string | undefined, response: Response) {
