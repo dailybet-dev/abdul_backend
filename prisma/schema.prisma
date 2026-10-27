@@ -10,6 +10,7 @@ datasource db {
 model AdminUser {
   id           String         @id @default(cuid())
   email        String         @unique
+  displayName  String         @default("Administrator")
   passwordHash String
   isActive     Boolean        @default(true)
   createdAt    DateTime       @default(now())
