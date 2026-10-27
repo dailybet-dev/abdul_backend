@@ -4,6 +4,7 @@ import { GqlExecutionContext } from '@nestjs/graphql';
 export interface CurrentAdmin {
   id: string;
   email: string;
+  displayName: string;
 }
 
 export const Admin = createParamDecorator((_data: unknown, context: ExecutionContext): CurrentAdmin | undefined => {
