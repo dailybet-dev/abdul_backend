@@ -1,8 +1,9 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Put, Req, Res, UnauthorizedException } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { LoginDto } from './login.dto';
+import { UpdateProfileDto, ChangePasswordDto } from './account.dto';
 import { Public } from './public.decorator';
 import { Admin } from './current-admin.decorator';
 
@@ -23,6 +24,18 @@ export class AuthController {
   @Get('me')
   me(@Admin() admin: { id: string; email: string }) {
     return { authenticated: true, admin };
+  }
+
+  @Put('profile')
+  async updateProfile(@Admin() admin: { id: string }, @Body() dto: UpdateProfileDto) {
+    return { success: true, admin: await this.auth.updateProfile(admin.id, dto.displayName, dto.email) };
+  }
+
+  @Post('change-password')
+  @HttpCode(HttpStatus.OK)
+  async changePassword(@Admin() admin: { id: string }, @Body() dto: ChangePasswordDto) {
+    await this.auth.changePassword(admin.id, dto.currentPassword, dto.newPassword);
+    return { success: true, message: 'Password updated. Please sign in again.' };
   }
 
   @Post('logout')
