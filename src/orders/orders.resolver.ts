@@ -7,7 +7,6 @@ registerEnumType(OrderFulfilment, { name: 'OrderFulfilment' });
 registerEnumType(OrderPaymentMethod, { name: 'OrderPaymentMethod' });
 registerEnumType(OrderStatus, { name: 'OrderStatus' });
 registerEnumType(PaymentStatus, { name: 'PaymentStatus' });
-registerEnumType(ProductConditionType, { name: 'ProductConditionType' });
 
 @ObjectType()
 class OrderItemRecord {
