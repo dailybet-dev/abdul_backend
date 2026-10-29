@@ -1,5 +1,5 @@
 import { Args, Field, GraphQLISODateTime, ID, InputType, Int, ObjectType, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { CategoriesService, CategoryInputData } from './categories.service';
+import { CategoriesService, CategoryInputData, SubcategoriesService, SubcategoryInputData } from './categories.service';
 
 @ObjectType()
 class CategoryRecord {
