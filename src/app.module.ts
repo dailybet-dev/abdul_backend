@@ -6,7 +6,6 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { AdminAuthGuard } from './auth/admin-auth.guard';
-import { HealthController } from './health.controller';
 
 @Module({
   imports: [
@@ -18,11 +17,12 @@ import { HealthController } from './health.controller';
       autoSchemaFile: true,
       path: '/api/graphql',
       context: ({ req, res }) => ({ req, res }),
-      playground: process.env.NODE_ENV !== 'production',
-      introspection: process.env.NODE_ENV !== 'production',
+      // GraphiQL is intentionally enabled in production so administrators can
+      // open the schema explorer directly at /api/graphql in Chrome.
+      graphiql: true,
+      introspection: true,
     }),
   ],
-  controllers: [HealthController],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: AdminAuthGuard },
