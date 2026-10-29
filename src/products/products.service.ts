@@ -102,7 +102,6 @@ export class ProductsService {
         subcategoryId: input.subcategoryId || null,
         brandId: input.brandId || null,
       } });
-      const existing = await tx.productCondition.findMany({ where: { productId: id }, select: { condition: true } });
       const keep = conditions.map(row => row.condition);
       await tx.productCondition.deleteMany({ where: { productId: id, condition: { notIn: keep } } });
       for (const condition of conditions) {
