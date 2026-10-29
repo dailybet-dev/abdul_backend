@@ -3,10 +3,15 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
+import express from 'express';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  // Product condition photos are sent as image data URLs, so allow larger JSON
+  // requests than Express' small default while keeping a defined upper bound.
+  const app = await NestFactory.create(AppModule, { bodyParser: false });
+  app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '50mb' }));
   app.use(helmet());
   app.use(cookieParser());
   app.getHttpAdapter().getInstance().set('trust proxy', 1);
