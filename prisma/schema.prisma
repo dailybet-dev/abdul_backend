@@ -32,15 +32,14 @@ model AdminSession {
 }
 
 model Category {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
-  icon        String   @default("📦")
-  description String   @default("")
-  sortOrder   Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
+  id            String        @id @default(cuid())
+  name          String
+  slug          String        @unique
+  icon          String        @default("📦")
+  description   String        @default("")
+  sortOrder     Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   subcategories Subcategory[]
 
   @@index([name])
@@ -48,17 +47,27 @@ model Category {
 }
 
 model Subcategory {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   name        String
-  slug        String   @unique
-  description String   @default("")
-  sortOrder   Int      @default(0)
+  slug        String    @unique
+  description String    @default("")
+  sortOrder   Int       @default(0)
   categoryId  String?
   category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@index([name])
   @@index([sortOrder])
   @@index([categoryId])
+}
+
+model Brand {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
 }
