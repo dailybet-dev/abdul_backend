@@ -119,8 +119,13 @@ export class OrdersService {
       }
       if (current.status === OrderStatus.CANCELLED && status !== OrderStatus.CANCELLED) {
         for (const item of current.items.filter(i => i.inventoryTracked && i.productConditionId)) {
-          const result = await tx.productCondition.updateMany({ where: { id: item.productConditionId!, stock: { gte: item.quantity } }, data: { stock: { decrement: item.quantity } } });
-          if (result.count !== 1) throw new BadRequestException('Cannot reopen this order: stock is no longer available.');
+          const condition = await tx.productCondition.findUnique({ where: { id: item.productConditionId! }, select: { stock: true, isAvailable: true } });
+          if (!condition || condition.stock < item.quantity) throw new BadRequestException('Cannot reopen this order: stock is no longer available.');
+          const result = await tx.productCondition.updateMany({
+            where: { id: item.productConditionId!, stock: { gte: item.quantity } },
+            data: { stock: { decrement: item.quantity }, isAvailable: condition.stock - item.quantity > 0 },
+          });
+          if (result.count !== 1) throw new BadRequestException('Cannot reopen this order: stock changed while updating.');
         }
       }
       const total = current.subtotal + deliveryFee;
