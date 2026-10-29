@@ -62,7 +62,7 @@ export class OrdersService {
       let subtotal = 0;
       for (const item of input.items) {
         let product = item.productId ? await tx.product.findUnique({ where: { id: item.productId }, include: { conditions: true } }) : null;
-        if (!product) product = await tx.product.findFirst({ where: { name: { equals: item.productName.trim(), mode: 'insensitive' } }, include: { conditions: true } });
+        if (!product) product = await tx.product.findFirst({ where: { OR: [{ name: { equals: item.productName.trim(), mode: 'insensitive' } }, ...(item.productId ? [{ slug: item.productId }] : [])] }, include: { conditions: true } });
         let condition = product?.conditions.find(c => c.condition === (item.condition || ProductConditionType.BRAND_NEW));
         if (!condition && product && item.condition == null && product.conditions.length === 1) condition = product.conditions[0];
         let finalPrice = item.unitPrice;
