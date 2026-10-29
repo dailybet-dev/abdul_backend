@@ -7,11 +7,13 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { AdminAuthGuard } from './auth/admin-auth.guard';
 import { GqlThrottlerGuard } from './auth/gql-throttler.guard';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
   imports: [
     PrismaModule,
     AuthModule,
+    CategoriesModule,
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
