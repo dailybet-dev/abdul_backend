@@ -12,6 +12,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
+    "start:railway": "prisma migrate deploy && node dist/main.js",
     "admin:create": "node dist/scripts/create-admin.js",
     "admin:bootstrap": "node dist/scripts/bootstrap-admin.js"
   },
