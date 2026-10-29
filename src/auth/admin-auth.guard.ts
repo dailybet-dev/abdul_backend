@@ -28,7 +28,14 @@ export class AdminAuthGuard implements CanActivate {
 
     if (isPublic) return true;
 
-    const token = req.cookies?.admin_session;
+    // GraphQL adapters/proxies can expose the raw Cookie header before cookie-parser
+    // has populated req.cookies. Read the same httpOnly session cookie as a fallback.
+    const cookieHeader = String(req.headers?.cookie || '');
+    const rawSessionCookie = cookieHeader.split(';').map((part) => part.trim())
+      .find((part) => part.startsWith('admin_session='));
+    const token = req.cookies?.admin_session || (rawSessionCookie
+      ? decodeURIComponent(rawSessionCookie.slice('admin_session='.length))
+      : undefined);
     if (!token) throw new UnauthorizedException('Administrator login required');
 
     const admin = await this.auth.validateSession(token);
