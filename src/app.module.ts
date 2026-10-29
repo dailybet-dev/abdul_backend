@@ -13,6 +13,7 @@ import { ProductsModule } from './products/products.module';
 import { ServicesModule } from './services/services.module';
 import { SubmissionsModule } from './submissions/submissions.module';
 import { OrdersModule } from './orders/orders.module';
+import { HomepageCarouselModule } from './homepage-carousel/homepage-carousel.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { OrdersModule } from './orders/orders.module';
     ServicesModule,
     SubmissionsModule,
     OrdersModule,
+    HomepageCarouselModule,
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
