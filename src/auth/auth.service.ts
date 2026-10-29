@@ -23,13 +23,14 @@ export class AuthService implements OnModuleInit {
 
   cookieOptions() {
     const production = process.env.NODE_ENV === 'production';
-    const domain = process.env.COOKIE_DOMAIN?.trim();
     return {
       httpOnly: true,
       secure: production,
       sameSite: (production ? 'none' : 'lax') as 'none' | 'lax',
       path: '/',
-      ...(domain ? { domain } : {}),
+      // Intentionally omit Domain: the browser receives this cookie from the
+      // frontend's same-origin /api/graphql rewrite. A backend Railway domain
+      // or shared Railway suffix here would make browsers reject the cookie.
       maxAge: SESSION_TTL_MS,
     };
   }
