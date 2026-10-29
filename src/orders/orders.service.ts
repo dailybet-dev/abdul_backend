@@ -26,7 +26,7 @@ export class OrdersService {
           { customerName: { contains: term, mode: 'insensitive' } },
           { customerPhone: { contains: term } },
           { customerEmail: { contains: term, mode: 'insensitive' } },
-          { items: { some: { productName: { contains: term, mode: 'insensitive' } } },
+          { items: { some: { productName: { contains: term, mode: 'insensitive' } } } },
         ] } : {}),
       },
       include: includeOrder,
