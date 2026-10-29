@@ -1,5 +1,6 @@
 import { Args, Field, GraphQLISODateTime, ID, InputType, Mutation, ObjectType, Query, Resolver } from '@nestjs/graphql';
 import { Public } from '../auth/public.decorator';
+import { Allow } from 'class-validator';
 import { SubmissionsService } from './submissions.service';
 
 @ObjectType()
@@ -34,18 +35,25 @@ class TrainingEnquiryRecord {
 }
 @InputType()
 class ContactSubmissionInput {
-  @Field() name!: string; @Field() email!: string;
-  @Field({ nullable: true }) phone?: string;
-  @Field() service!: string; @Field() message!: string;
+  // @Allow marks GraphQL input properties as accepted by the global
+  // ValidationPipe whitelist (which otherwise rejects every field).
+  @Allow() @Field() name!: string;
+  @Allow() @Field() email!: string;
+  @Allow() @Field({ nullable: true }) phone?: string;
+  @Allow() @Field() service!: string;
+  @Allow() @Field() message!: string;
 }
 @InputType()
 class TrainingEnquiryInput {
-  @Field() fullName!: string; @Field() phone!: string;
-  @Field({ nullable: true }) email?: string;
-  @Field() course!: string; @Field() level!: string; @Field() schedule!: string;
-  @Field({ nullable: true }) startDate?: string;
-  @Field({ nullable: true }) goal?: string;
-  @Field({ nullable: true }) notes?: string;
+  @Allow() @Field() fullName!: string;
+  @Allow() @Field() phone!: string;
+  @Allow() @Field({ nullable: true }) email?: string;
+  @Allow() @Field() course!: string;
+  @Allow() @Field() level!: string;
+  @Allow() @Field() schedule!: string;
+  @Allow() @Field({ nullable: true }) startDate?: string;
+  @Allow() @Field({ nullable: true }) goal?: string;
+  @Allow() @Field({ nullable: true }) notes?: string;
 }
 
 @Resolver()
