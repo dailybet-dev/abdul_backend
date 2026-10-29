@@ -1,6 +1,6 @@
-import { Args, Field, Float, GraphQLISODateTime, ID, InputType, Int, Mutation, ObjectType, Query, Resolver, registerEnumType } from '@nestjs/graphql';
+import { Args, Field, GraphQLISODateTime, ID, InputType, Int, Mutation, ObjectType, Query, Resolver, registerEnumType } from '@nestjs/graphql';
 import { ProductConditionType } from '@prisma/client';
-import { ProductsService, ProductInputData, ProductConditionInputData } from './products.service';
+import { ProductsService, ProductInputData } from './products.service';
 
 registerEnumType(ProductConditionType, { name: 'ProductConditionType' });
 
