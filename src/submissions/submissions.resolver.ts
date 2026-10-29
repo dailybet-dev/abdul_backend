@@ -17,7 +17,7 @@ class NewsletterSubscriptionRecord {
 class ContactSubmissionRecord {
   @Field(() => ID) id!: string;
   @Field() name!: string; @Field() email!: string; @Field() phone!: string;
-  @Field() service!: string; @Field() message!: string; @Field() status!: String;
+  @Field() service!: string; @Field() message!: string; @Field() status!: string;
   @Field() adminNote!: string;
   @Field(() => GraphQLISODateTime) createdAt!: Date;
   @Field(() => GraphQLISODateTime) updatedAt!: Date;
