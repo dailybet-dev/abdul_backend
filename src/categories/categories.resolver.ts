@@ -1,5 +1,6 @@
 import { Args, Field, GraphQLISODateTime, ID, InputType, Int, ObjectType, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { CategoriesService, CategoryInputData, SubcategoriesService, SubcategoryInputData } from './categories.service';
+import { Public } from '../auth/public.decorator';
 
 @ObjectType()
 class CategoryRecord {
@@ -26,6 +27,7 @@ class CategoryInput {
 export class CategoriesResolver {
   constructor(private readonly categoriesService: CategoriesService) {}
 
+  @Public()
   @Query(() => [CategoryRecord], { name: 'categories' })
   categories(@Args('search', { type: () => String, nullable: true }) search?: string) {
     return this.categoriesService.list(search || '');
@@ -83,6 +85,7 @@ class SubcategoryInput {
 export class SubcategoriesResolver {
   constructor(private readonly subcategoriesService: SubcategoriesService) {}
 
+  @Public()
   @Query(() => [SubcategoryRecord], { name: 'subcategories' })
   subcategories(@Args('search', { type: () => String, nullable: true }) search?: string) {
     return this.subcategoriesService.list(search || '');
