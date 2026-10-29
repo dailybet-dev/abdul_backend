@@ -1,4 +1,4 @@
-import { Args, Field, ID, InputType, Int, ObjectType, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Field, GraphQLISODateTime, ID, InputType, Int, ObjectType, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { CategoriesService, CategoryInputData } from './categories.service';
 
 @ObjectType()
@@ -9,8 +9,8 @@ class CategoryRecord {
   @Field() icon!: string;
   @Field() description!: string;
   @Field(() => Int) sortOrder!: number;
-  @Field(() => String) createdAt!: Date;
-  @Field(() => String) updatedAt!: Date;
+  @Field(() => GraphQLISODateTime) createdAt!: Date;
+  @Field(() => GraphQLISODateTime) updatedAt!: Date;
 }
 
 @InputType()
