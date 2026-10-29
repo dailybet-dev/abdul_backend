@@ -94,6 +94,7 @@ model Product {
   subcategory   Subcategory?       @relation(fields: [subcategoryId], references: [id], onDelete: SetNull)
   brand         Brand?             @relation(fields: [brandId], references: [id], onDelete: SetNull)
   conditions    ProductCondition[]
+  orderItems    OrderItem[]
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
 
@@ -113,6 +114,7 @@ model ProductCondition {
   isAvailable Boolean              @default(true)
   images      String[]             @default([])
   product     Product              @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems  OrderItem[]
   createdAt   DateTime             @default(now())
   updatedAt   DateTime             @updatedAt
 
@@ -200,4 +202,93 @@ model TrainingEnquiry {
 
   @@index([status, createdAt])
   @@index([phone])
+}
+
+
+enum OrderStatus {
+  NEW
+  CONFIRMED
+  PROCESSING
+  READY_FOR_PICKUP
+  OUT_FOR_DELIVERY
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  UNPAID
+  DEPOSIT_PAID
+  PARTIALLY_PAID
+  PAID
+  REFUNDED
+}
+
+enum OrderFulfilment {
+  PICKUP
+  DELIVERY
+}
+
+enum OrderPaymentMethod {
+  MTN_MOBILE_MONEY
+  AIRTEL_MONEY
+  CENTENARY_BANK
+  CASH_ON_DELIVERY
+  OTHER
+}
+
+model Order {
+  id                 String               @id @default(cuid())
+  orderNumber        String               @unique
+  customerName       String
+  customerPhone      String
+  customerEmail      String               @default("")
+  fulfilment         OrderFulfilment
+  pickupLocation     String               @default("")
+  deliveryAddress    String               @default("")
+  deliveryArea       String               @default("")
+  deliveryNotes      String               @default("")
+  paymentMethod      OrderPaymentMethod
+  paymentStatus      PaymentStatus        @default(UNPAID)
+  status             OrderStatus          @default(NEW)
+  subtotal           Int
+  deliveryFee        Int                  @default(0)
+  total              Int
+  depositRequired    Int                  @default(0)
+  amountPaid         Int                  @default(0)
+  transactionReference String             @default("")
+  customerNote       String               @default("")
+  adminNote          String               @default("")
+  trackingNumber     String               @default("")
+  inventoryReserved  Boolean              @default(false)
+  inventoryNote      String               @default("")
+  items              OrderItem[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  cancelledAt        DateTime?
+
+  @@index([status, createdAt])
+  @@index([paymentStatus, createdAt])
+  @@index([customerPhone])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id                 String          @id @default(cuid())
+  orderId            String
+  productId          String?
+  productConditionId String?
+  productName        String
+  productSku         String           @default("")
+  condition          ProductConditionType?
+  quantity           Int
+  unitPrice          Int
+  lineTotal          Int
+  inventoryTracked   Boolean          @default(false)
+  order              Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product            Product?         @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productCondition   ProductCondition? @relation(fields: [productConditionId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([productId])
+  @@index([productConditionId])
 }
