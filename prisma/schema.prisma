@@ -71,3 +71,49 @@ model Brand {
 
   @@index([name])
 }
+
+enum ProductConditionType {
+  BRAND_NEW
+  UK_USED
+  PREMIUM_REPACK
+}
+
+model Product {
+  id            String             @id @default(cuid())
+  name          String
+  slug          String             @unique
+  sku           String             @unique
+  description   String             @default("")
+  categoryId    String?
+  subcategoryId String?
+  brandId       String?
+  category      Category?          @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  subcategory   Subcategory?       @relation(fields: [subcategoryId], references: [id], onDelete: SetNull)
+  brand         Brand?             @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  conditions    ProductCondition[]
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  @@index([name])
+  @@index([categoryId])
+  @@index([subcategoryId])
+  @@index([brandId])
+}
+
+model ProductCondition {
+  id          String               @id @default(cuid())
+  productId   String
+  condition   ProductConditionType
+  price       Int                  @default(0)
+  salePrice   Int?
+  stock       Int                  @default(0)
+  isAvailable Boolean              @default(true)
+  images      String[]             @default([])
+  product     Product              @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  @@unique([productId, condition])
+  @@index([condition])
+  @@index([isAvailable, stock])
+}
