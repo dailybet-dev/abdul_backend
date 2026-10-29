@@ -120,3 +120,27 @@ model ProductCondition {
   @@index([condition])
   @@index([isAvailable, stock])
 }
+
+
+model Service {
+  id                String   @id @default(cuid())
+  title             String
+  slug              String   @unique
+  category          String   @default("ICT & Electrical")
+  description       String   @default("")
+  homeDescription   String   @default("")
+  imageUrl          String   @default("")
+  icon              String   @default("Wrench")
+  whatsappMessage   String   @default("")
+  intro             String   @default("")
+  detailDescription String   @default("")
+  detailItems       String[] @default([])
+  sortOrder         Int      @default(0)
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([title])
+  @@index([sortOrder])
+  @@index([isActive, sortOrder])
+}
