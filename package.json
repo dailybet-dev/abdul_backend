@@ -2,7 +2,7 @@
   "name": "abdul-backend",
   "version": "1.0.0",
   "private": true,
-  "description": "NestJS GraphQL and REST API with Prisma/PostgreSQL admin sessions",
+  "description": "NestJS GraphQL API with Prisma/PostgreSQL admin sessions",
   "scripts": {
     "build": "prisma generate && nest build",
     "start": "node dist/main.js",
