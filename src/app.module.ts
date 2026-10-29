@@ -12,6 +12,7 @@ import { BrandsModule } from './brands/brands.module';
 import { ProductsModule } from './products/products.module';
 import { ServicesModule } from './services/services.module';
 import { SubmissionsModule } from './submissions/submissions.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { SubmissionsModule } from './submissions/submissions.module';
     ProductsModule,
     ServicesModule,
     SubmissionsModule,
+    OrdersModule,
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
