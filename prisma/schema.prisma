@@ -292,3 +292,24 @@ model OrderItem {
   @@index([productId])
   @@index([productConditionId])
 }
+
+
+model HomepageSlide {
+  id             String   @id @default(cuid())
+  eyebrow        String   @default("")
+  title          String
+  highlight      String   @default("")
+  description    String   @default("")
+  imageUrl       String
+  alt            String   @default("")
+  primaryLabel   String   @default("Explore Services")
+  primaryHref    String   @default("/services")
+  secondaryLabel String   @default("Buy Products")
+  secondaryHref  String   @default("/shop")
+  sortOrder      Int      @default(0)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
+}
