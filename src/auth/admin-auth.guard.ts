@@ -19,7 +19,11 @@ export class AdminAuthGuard implements CanActivate {
     if (req.method && !['GET', 'HEAD', 'OPTIONS'].includes(req.method.toUpperCase())) {
       const origin = req.headers.origin;
       const allowed = (process.env.FRONTEND_URL || 'http://localhost:3000').split(',').map((s) => s.trim());
-      if (origin && !allowed.includes(origin)) throw new ForbiddenException('Untrusted request origin');
+      // Permit GraphiQL served from this same backend origin as well as the trusted frontend.
+      const backendOrigin = `${req.protocol}://${req.get('host')}`;
+      if (origin && !allowed.includes(origin) && origin !== backendOrigin) {
+        throw new ForbiddenException('Untrusted request origin');
+      }
     }
 
     if (isPublic) return true;
