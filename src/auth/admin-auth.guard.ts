@@ -33,9 +33,10 @@ export class AdminAuthGuard implements CanActivate {
     const cookieHeader = String(req.headers?.cookie || '');
     const rawSessionCookie = cookieHeader.split(';').map((part) => part.trim())
       .find((part) => part.startsWith('admin_session='));
+    const forwardedSession = req.headers?.['x-admin-session'];
     const token = req.cookies?.admin_session || (rawSessionCookie
       ? decodeURIComponent(rawSessionCookie.slice('admin_session='.length))
-      : undefined);
+      : (typeof forwardedSession === 'string' ? forwardedSession : undefined));
     if (!token) throw new UnauthorizedException('Administrator login required');
 
     const admin = await this.auth.validateSession(token);
