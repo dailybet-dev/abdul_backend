@@ -1,5 +1,6 @@
 import { Args, Field, GraphQLISODateTime, ID, InputType, Mutation, ObjectType, Query, Resolver } from '@nestjs/graphql';
 import { BrandsService, BrandInputData } from './brands.service';
+import { Public } from '../auth/public.decorator';
 
 @ObjectType()
 class BrandRecord {
@@ -20,6 +21,7 @@ class BrandInput {
 export class BrandsResolver {
   constructor(private readonly brandsService: BrandsService) {}
 
+  @Public()
   @Query(() => [BrandRecord], { name: 'brands' })
   brands(@Args('search', { type: () => String, nullable: true }) search?: string) {
     return this.brandsService.list(search || '');
