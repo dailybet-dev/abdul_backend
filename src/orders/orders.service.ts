@@ -142,7 +142,7 @@ export class OrdersService {
 
   async remove(id: string) {
     const order = await this.get(id);
-    if (order.status !== OrderStatus.CANCELLED && order.items.some(i => i.inventoryTracked)) throw new BadRequestException('Cancel an order first to restore reserved stock, then delete it.');
+    if (order.status !== OrderStatus.CANCELLED) throw new BadRequestException('Cancel an order first before deleting it. This preserves active order and stock history.');
     await this.prisma.order.delete({ where: { id } });
     return true;
   }
