@@ -41,7 +41,7 @@ export class ProductsService {
         { category: { is: { name: { contains: term, mode: 'insensitive' } } } },
       ] } : undefined,
       include: includeProduct,
-      orderBy: { updatedAt: 'desc' },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
