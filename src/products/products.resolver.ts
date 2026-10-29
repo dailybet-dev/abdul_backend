@@ -1,6 +1,7 @@
 import { Args, Field, GraphQLISODateTime, ID, InputType, Int, Mutation, ObjectType, Query, Resolver, registerEnumType } from '@nestjs/graphql';
 import { ProductConditionType } from '@prisma/client';
 import { ProductsService, ProductInputData } from './products.service';
+import { Public } from '../auth/public.decorator';
 
 registerEnumType(ProductConditionType, { name: 'ProductConditionType' });
 
@@ -64,10 +65,12 @@ class ProductNameCheck {
 @Resolver(() => ProductRecord)
 export class ProductsResolver {
   constructor(private readonly productsService: ProductsService) {}
+  @Public()
   @Query(() => [ProductRecord], { name: 'products' })
   products(@Args('search', { type: () => String, nullable: true }) search?: string) {
     return this.productsService.list(search || '');
   }
+  @Public()
   @Query(() => ProductRecord, { name: 'product' })
   product(@Args('id', { type: () => ID }) id: string) { return this.productsService.get(id); }
   @Query(() => ProductNameCheck, { name: 'productNameExists' })
