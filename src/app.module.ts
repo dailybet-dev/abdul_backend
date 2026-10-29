@@ -9,6 +9,7 @@ import { AdminAuthGuard } from './auth/admin-auth.guard';
 import { GqlThrottlerGuard } from './auth/gql-throttler.guard';
 import { CategoriesModule } from './categories/categories.module';
 import { BrandsModule } from './brands/brands.module';
+import { ProductsModule } from './products/products.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { BrandsModule } from './brands/brands.module';
     AuthModule,
     CategoriesModule,
     BrandsModule,
+    ProductsModule,
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
