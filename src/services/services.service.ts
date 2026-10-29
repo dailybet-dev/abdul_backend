@@ -94,7 +94,7 @@ export class ServicesService {
 
   private slugify(value: string) {
     return value.toLowerCase().trim().normalize('NFKD')
-      .replace(/[\\u0300-\\u036f]/g, '')
+      .replace(/[\u0300-\u036f]/g, '')
       .replace(/&/g, ' and ')
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '');
