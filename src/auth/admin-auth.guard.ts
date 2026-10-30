@@ -15,11 +15,9 @@ export class AdminAuthGuard implements CanActivate {
     const req = gql ? gqlContext.req : context.switchToHttp().getRequest();
     const res = gql ? gqlContext.res : context.switchToHttp().getResponse();
 
-    // Check Origin on unsafe methods even for public login endpoints to reduce login-CSRF risk.
     if (req.method && !['GET', 'HEAD', 'OPTIONS'].includes(req.method.toUpperCase())) {
       const origin = req.headers.origin;
       const allowed = (process.env.FRONTEND_URL || 'http://localhost:3000').split(',').map((s) => s.trim());
-      // Permit GraphiQL served from this same backend origin as well as the trusted frontend.
       const backendOrigin = `${req.protocol}://${req.get('host')}`;
       if (origin && !allowed.includes(origin) && origin !== backendOrigin) {
         throw new ForbiddenException('Untrusted request origin');
@@ -28,31 +26,48 @@ export class AdminAuthGuard implements CanActivate {
 
     if (isPublic) return true;
 
-    // GraphQL adapters/proxies can expose the raw Cookie header before cookie-parser
-    // has populated req.cookies. Read the same httpOnly session cookie as a fallback.
-    const cookieHeader = String(req.headers?.cookie || '');
-    const rawSessionCookie = cookieHeader.split(';').map((part) => part.trim())
-      .find((part) => part.startsWith('admin_session='));
-    const forwardedSession = req.headers?.['x-admin-session'];
-    const forwardedSessionToken = typeof forwardedSession === 'string' ? forwardedSession : undefined;
-    const authorization = String(req.headers?.authorization || '');
-    const bearerSession = authorization.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
-    // The browser's httpOnly session cookie is authoritative. A stale Bearer
-    // header must never override a valid cookie and incorrectly sign out admins.
-    let rawCookieToken: string | undefined;
-    if (rawSessionCookie) {
-      try { rawCookieToken = decodeURIComponent(rawSessionCookie.slice('admin_session='.length)); }
-      catch { rawCookieToken = rawSessionCookie.slice('admin_session='.length); }
-    }
-    const token = req.cookies?.admin_session || rawCookieToken || forwardedSessionToken || bearerSession;
-    if (!token) throw new UnauthorizedException('Administrator login required');
+    // A browser can temporarily send more than one same-named cookie (for
+    // example after a cookie Domain/host migration). Do not let an expired
+    // duplicate selected by cookie-parser mask another still-valid session.
+    const candidates: string[] = [];
+    const addCandidate = (value: unknown) => {
+      if (typeof value === 'string' && value.trim() && !candidates.includes(value.trim())) {
+        candidates.push(value.trim());
+      }
+    };
 
-    const admin = await this.auth.validateSession(token);
-    if (!admin) {
-      res.clearCookie('admin_session', this.auth.cookieOptions());
-      throw new UnauthorizedException('Administrator session expired');
+    addCandidate(req.cookies?.admin_session);
+
+    const cookieHeader = String(req.headers?.cookie || '');
+    for (const part of cookieHeader.split(';')) {
+      const trimmed = part.trim();
+      if (!trimmed.startsWith('admin_session=')) continue;
+      const value = trimmed.slice('admin_session='.length);
+      try { addCandidate(decodeURIComponent(value)); }
+      catch { addCandidate(value); }
     }
-    req.admin = admin;
-    return true;
+
+    addCandidate(req.headers?.['x-admin-session']);
+    const authorization = String(req.headers?.authorization || '');
+    addCandidate(authorization.match(/^Bearer\\s+(.+)$/i)?.[1]);
+
+    if (candidates.length === 0) {
+      throw new UnauthorizedException('Administrator login required');
+    }
+
+    // Validate each distinct candidate. The first valid database-backed
+    // session wins; invalid duplicate/forwarded values cannot log out an
+    // administrator whose other cookie value is still valid.
+    for (const token of candidates) {
+      const admin = await this.auth.validateSession(token);
+      if (admin) {
+        req.admin = admin;
+        return true;
+      }
+    }
+
+    const { maxAge: _maxAge, ...clearOptions } = this.auth.cookieOptions();
+    res.clearCookie('admin_session', clearOptions);
+    throw new UnauthorizedException('Administrator session expired');
   }
 }
