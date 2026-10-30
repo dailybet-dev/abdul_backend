@@ -248,6 +248,7 @@ model Order {
   deliveryArea       String               @default("")
   deliveryNotes      String               @default("")
   paymentMethod      OrderPaymentMethod
+  orderChannel       String               @default("WEBSITE")
   paymentStatus      PaymentStatus        @default(UNPAID)
   status             OrderStatus          @default(NEW)
   subtotal           Int
