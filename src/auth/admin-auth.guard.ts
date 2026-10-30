@@ -34,10 +34,13 @@ export class AdminAuthGuard implements CanActivate {
     const rawSessionCookie = cookieHeader.split(';').map((part) => part.trim())
       .find((part) => part.startsWith('admin_session='));
     const forwardedSession = req.headers?.['x-admin-session'];
-    // The frontend proxy sends Next's canonical parsed cookie separately.
-    // Prefer it over potentially duplicated/stale cookie header values.
-    const token = (typeof forwardedSession === 'string' && forwardedSession)
-      ? forwardedSession
+    const authorization = String(req.headers?.authorization || '');
+    const bearerSession = authorization.match(/^Bearer\\s+(.+)$/i)?.[1]?.trim();
+    // Next's same-origin proxy sends a canonical session in Authorization and
+    // x-admin-session. Accept either before falling back to cookie parsing.
+    // This avoids adapter/proxy differences that can drop parsed cookies.
+    const token = (bearerSession || (typeof forwardedSession === 'string' && forwardedSession))
+      ? (bearerSession || forwardedSession)
       : (req.cookies?.admin_session || (rawSessionCookie
         ? decodeURIComponent(rawSessionCookie.slice('admin_session='.length))
         : undefined));
