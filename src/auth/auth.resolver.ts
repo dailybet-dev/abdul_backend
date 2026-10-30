@@ -69,7 +69,19 @@ export class AuthResolver {
 
   @Mutation(() => MutationPayload)
   async logout(@Context() context: GraphQLContext): Promise<MutationPayload> {
-    const token = context.req.cookies?.admin_session as string | undefined;
+    const cookieToken = context.req.cookies?.admin_session as string | undefined;
+    const rawCookie = context.req.headers.cookie?.split(';').map((part) => part.trim())
+      .find((part) => part.startsWith('admin_session='));
+    let rawCookieToken: string | undefined;
+    if (rawCookie) {
+      try { rawCookieToken = decodeURIComponent(rawCookie.slice('admin_session='.length)); }
+      catch { rawCookieToken = rawCookie.slice('admin_session='.length); }
+    }
+    const forwarded = context.req.headers['x-admin-session'];
+    const authorization = String(context.req.headers.authorization || '');
+    const bearer = authorization.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
+    const token = cookieToken || rawCookieToken ||
+      (typeof forwarded === 'string' ? forwarded : undefined) || bearer;
     await this.auth.logout(token, context.res);
     return { success: true, message: 'Signed out successfully.' };
   }

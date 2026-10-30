@@ -37,11 +37,14 @@ export class AdminAuthGuard implements CanActivate {
     const forwardedSessionToken = typeof forwardedSession === 'string' ? forwardedSession : undefined;
     const authorization = String(req.headers?.authorization || '');
     const bearerSession = authorization.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
-    // Prefer the canonical session explicitly forwarded by the frontend proxy.
-    // Authorization is retained reliably across GraphQL adapters and proxies.
-    const token = bearerSession || forwardedSessionToken || req.cookies?.admin_session || (rawSessionCookie
-      ? decodeURIComponent(rawSessionCookie.slice('admin_session='.length))
-      : undefined);
+    // The browser's httpOnly session cookie is authoritative. A stale Bearer
+    // header must never override a valid cookie and incorrectly sign out admins.
+    let rawCookieToken: string | undefined;
+    if (rawSessionCookie) {
+      try { rawCookieToken = decodeURIComponent(rawSessionCookie.slice('admin_session='.length)); }
+      catch { rawCookieToken = rawSessionCookie.slice('admin_session='.length); }
+    }
+    const token = req.cookies?.admin_session || rawCookieToken || forwardedSessionToken || bearerSession;
     if (!token) throw new UnauthorizedException('Administrator login required');
 
     const admin = await this.auth.validateSession(token);
