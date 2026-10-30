@@ -34,6 +34,7 @@ class OrderRecord {
   @Field() deliveryArea!: string;
   @Field() deliveryNotes!: string;
   @Field(() => OrderPaymentMethod) paymentMethod!: OrderPaymentMethod;
+  @Field() orderChannel!: string;
   @Field(() => PaymentStatus) paymentStatus!: PaymentStatus;
   @Field(() => OrderStatus) status!: OrderStatus;
   @Field(() => Int) subtotal!: number;
