@@ -62,7 +62,25 @@ export class ServicesService {
     if (!slug) throw new BadRequestException('A valid service slug is required.');
     const owner = await this.prisma.service.findFirst({ where: { slug, NOT: { id } } });
     if (owner) throw new BadRequestException('A service with this slug already exists.');
-    return this.prisma.service.update({ where: { id }, data: this.normalize(input, title, slug) });
+    // Treat updates as safe partial edits: omitted fields retain their current values.
+    // This prevents an older or narrower admin form from accidentally blanking
+    // an existing service image or detail content.
+    const merged: ServiceInputData = {
+      title,
+      slug,
+      category: input.category ?? current.category,
+      description: input.description ?? current.description,
+      homeDescription: input.homeDescription ?? current.homeDescription,
+      imageUrl: input.imageUrl ?? current.imageUrl,
+      icon: input.icon ?? current.icon,
+      whatsappMessage: input.whatsappMessage ?? current.whatsappMessage,
+      intro: input.intro ?? current.intro,
+      detailDescription: input.detailDescription ?? current.detailDescription,
+      detailItems: input.detailItems ?? current.detailItems,
+      sortOrder: input.sortOrder ?? current.sortOrder,
+      isActive: input.isActive ?? current.isActive,
+    };
+    return this.prisma.service.update({ where: { id }, data: this.normalize(merged, title, slug) });
   }
 
   async remove(id: string) {
