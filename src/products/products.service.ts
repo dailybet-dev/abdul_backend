@@ -64,11 +64,13 @@ export class ProductsService {
   async create(input: ProductInputData) {
     const name = input.name.trim();
     if (!name) throw new BadRequestException('Product name is required.');
+    if (!input.categoryId) throw new BadRequestException('Product category is required.');
     if (await this.nameExists(name)) throw new BadRequestException('A product with the same name already exists.');
     const conditions = this.validateConditions(input.conditions);
-    const sku = (input.sku || this.slugify(name).toUpperCase()).trim();
+    const sku = input.sku?.trim() || this.slugify(name).toUpperCase();
     const slug = this.slugify(name);
     if (!slug) throw new BadRequestException('A valid product name is required.');
+    if (!sku) throw new BadRequestException('A valid SKU is required.');
     if (await this.prisma.product.findFirst({ where: { sku } })) throw new BadRequestException('This SKU already exists.');
     return this.prisma.product.create({
       data: {
@@ -88,12 +90,14 @@ export class ProductsService {
     if (!current) throw new NotFoundException('Product not found.');
     const name = input.name.trim();
     if (!name) throw new BadRequestException('Product name is required.');
+    if (!input.categoryId) throw new BadRequestException('Product category is required.');
     if (await this.nameExists(name, id)) throw new BadRequestException('A product with the same name already exists.');
     const conditions = this.validateConditions(input.conditions);
-    const sku = (input.sku || current.sku).trim();
+    const sku = input.sku?.trim() || current.sku;
     const skuOwner = await this.prisma.product.findFirst({ where: { sku, NOT: { id } } });
     if (skuOwner) throw new BadRequestException('This SKU already exists.');
     const slug = this.slugify(name);
+    if (!slug) throw new BadRequestException('A valid product name is required.');
     return this.prisma.$transaction(async tx => {
       await tx.product.update({ where: { id }, data: {
         name, slug: await this.uniqueSlug(slug, id), sku,
