@@ -73,6 +73,7 @@ class CreateOrderInput {
   @Field({ nullable: true }) deliveryArea?: string;
   @Field({ nullable: true }) deliveryNotes?: string;
   @Field(() => OrderPaymentMethod) paymentMethod!: OrderPaymentMethod;
+  @Field({ nullable: true }) orderChannel?: string;
   @Field({ nullable: true }) customerNote?: string;
   @Field(() => [OrderItemInput]) items!: OrderItemInput[];
 }
