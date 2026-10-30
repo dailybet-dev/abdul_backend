@@ -34,16 +34,14 @@ export class AdminAuthGuard implements CanActivate {
     const rawSessionCookie = cookieHeader.split(';').map((part) => part.trim())
       .find((part) => part.startsWith('admin_session='));
     const forwardedSession = req.headers?.['x-admin-session'];
+    const forwardedSessionToken = typeof forwardedSession === 'string' ? forwardedSession : undefined;
     const authorization = String(req.headers?.authorization || '');
-    const bearerSession = authorization.match(/^Bearer\\s+(.+)$/i)?.[1]?.trim();
-    // Next's same-origin proxy sends a canonical session in Authorization and
-    // x-admin-session. Accept either before falling back to cookie parsing.
-    // This avoids adapter/proxy differences that can drop parsed cookies.
-    const token = (bearerSession || (typeof forwardedSession === 'string' && forwardedSession))
-      ? (bearerSession || forwardedSession)
-      : (req.cookies?.admin_session || (rawSessionCookie
-        ? decodeURIComponent(rawSessionCookie.slice('admin_session='.length))
-        : undefined));
+    const bearerSession = authorization.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
+    // Prefer the canonical session explicitly forwarded by the frontend proxy.
+    // Authorization is retained reliably across GraphQL adapters and proxies.
+    const token = bearerSession || forwardedSessionToken || req.cookies?.admin_session || (rawSessionCookie
+      ? decodeURIComponent(rawSessionCookie.slice('admin_session='.length))
+      : undefined);
     if (!token) throw new UnauthorizedException('Administrator login required');
 
     const admin = await this.auth.validateSession(token);
