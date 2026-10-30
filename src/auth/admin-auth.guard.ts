@@ -49,7 +49,7 @@ export class AdminAuthGuard implements CanActivate {
 
     addCandidate(req.headers?.['x-admin-session']);
     const authorization = String(req.headers?.authorization || '');
-    addCandidate(authorization.match(/^Bearer\\s+(.+)$/i)?.[1]);
+    addCandidate(authorization.match(/^Bearer\s+(.+)$/i)?.[1]);
 
     if (candidates.length === 0) {
       throw new UnauthorizedException('Administrator login required');
