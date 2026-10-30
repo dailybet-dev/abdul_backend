@@ -96,7 +96,7 @@ export class OrdersService {
       return tx.order.create({
         data: {
           orderNumber, customerName, customerPhone, customerEmail: input.customerEmail?.trim() || '',
-          fulfilment: input.fulfilment, orderChannel: input.orderChannel === "WHATSAPP" ? "WHATSAPP" : "WEBSITE", pickupLocation: input.fulfilment === OrderFulfilment.PICKUP ? (input.pickupLocation?.trim() || '') : '',
+          fulfilment: input.fulfilment, orderChannel: input.orderChannel === "WHATSAPP" ? "WHATSAPP" : "WEBSITE_CHECKOUT", pickupLocation: input.fulfilment === OrderFulfilment.PICKUP ? (input.pickupLocation?.trim() || '') : '',
           deliveryAddress: input.deliveryAddress?.trim() || '', deliveryArea: input.deliveryArea?.trim() || '',
           deliveryNotes: input.deliveryNotes?.trim() || '', paymentMethod: input.paymentMethod,
           subtotal, deliveryFee: 0, total: subtotal, depositRequired, customerNote: input.customerNote?.trim() || '',
