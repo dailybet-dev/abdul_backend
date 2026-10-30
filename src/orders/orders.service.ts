@@ -7,7 +7,7 @@ type OrderItemInputData = { productId?: string | null; productName: string; prod
 type CreateOrderData = {
   customerName: string; customerPhone: string; customerEmail?: string; fulfilment: OrderFulfilment;
   pickupLocation?: string; deliveryAddress?: string; deliveryArea?: string; deliveryNotes?: string;
-  paymentMethod: OrderPaymentMethod; customerNote?: string; items: OrderItemInputData[];
+  paymentMethod: OrderPaymentMethod; orderChannel?: string; customerNote?: string; items: OrderItemInputData[];
 };
 const includeOrder = { items: { orderBy: { productName: 'asc' as const } } } satisfies Prisma.OrderInclude;
 
@@ -65,6 +65,7 @@ export class OrdersService {
         if (!product) product = await tx.product.findFirst({ where: { OR: [{ name: { equals: item.productName.trim(), mode: 'insensitive' } }, ...(item.productId ? [{ slug: item.productId }] : [])] }, include: { conditions: true } });
         let condition = product?.conditions.find(c => c.condition === (item.condition || ProductConditionType.BRAND_NEW));
         if (!condition && product && item.condition == null && product.conditions.length === 1) condition = product.conditions[0];
+        if (product && !condition) throw new BadRequestException("The selected product condition is no longer available for " + product.name + ". Refresh the shop and try again.");
         let finalPrice = item.unitPrice;
         let tracked = false;
         let productId: string | null = null;
@@ -94,7 +95,7 @@ export class OrdersService {
       return tx.order.create({
         data: {
           orderNumber, customerName, customerPhone, customerEmail: input.customerEmail?.trim() || '',
-          fulfilment: input.fulfilment, pickupLocation: input.fulfilment === OrderFulfilment.PICKUP ? (input.pickupLocation?.trim() || '') : '',
+          fulfilment: input.fulfilment, orderChannel: input.orderChannel === "WHATSAPP" ? "WHATSAPP" : "WEBSITE", pickupLocation: input.fulfilment === OrderFulfilment.PICKUP ? (input.pickupLocation?.trim() || '') : '',
           deliveryAddress: input.deliveryAddress?.trim() || '', deliveryArea: input.deliveryArea?.trim() || '',
           deliveryNotes: input.deliveryNotes?.trim() || '', paymentMethod: input.paymentMethod,
           subtotal, deliveryFee: 0, total: subtotal, depositRequired, customerNote: input.customerNote?.trim() || '',
@@ -129,7 +130,7 @@ export class OrdersService {
         }
       }
       const total = current.subtotal + deliveryFee;
-      const effectivePaid = Math.min(amountPaid, total);
+      const effectivePaid = paymentStatus === PaymentStatus.PAID ? total : Math.min(amountPaid, total);
       return tx.order.update({ where: { id }, data: {
         status, paymentStatus, amountPaid: effectivePaid, deliveryFee, total,
         depositRequired: current.paymentMethod === OrderPaymentMethod.CASH_ON_DELIVERY ? Math.ceil(current.subtotal / 2) : 0,
