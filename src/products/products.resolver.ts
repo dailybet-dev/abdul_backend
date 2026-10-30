@@ -85,6 +85,11 @@ export class ProductsResolver {
   updateProduct(@Args('id', { type: () => ID }) id: string, @Args('input', { type: () => ProductInput }) input: ProductInput) {
     return this.productsService.update(id, input as ProductInputData);
   }
+  @Mutation(() => Boolean)
+  deleteProduct(@Args('id', { type: () => ID }) id: string) {
+    return this.productsService.remove(id);
+  }
+
   @Mutation(() => ProductRecord)
   markProductOutOfStock(
     @Args('id', { type: () => ID }) id: string,

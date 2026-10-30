@@ -115,6 +115,14 @@ export class ProductsService {
     });
   }
 
+  async remove(id: string) {
+    const existing = await this.prisma.product.findUnique({ where: { id }, select: { id: true } });
+    if (!existing) throw new NotFoundException('Product not found.');
+    // Preserve historical order-item snapshots; relations set null and conditions cascade.
+    await this.prisma.product.delete({ where: { id } });
+    return true;
+  }
+
   async setOutOfStock(id: string, condition?: ProductConditionType) {
     const product = await this.prisma.product.findUnique({ where: { id } });
     if (!product) throw new NotFoundException('Product not found.');
@@ -136,10 +144,10 @@ export class ProductsService {
       if (images.some(src => !/^data:image\/(png|jpeg|jpg);base64,/i.test(src) && !/^https?:\/\//i.test(src))) {
         throw new BadRequestException('Images must be JPG or PNG files.');
       }
-      if (!Number.isInteger(row.price) || row.price < 0 || !Number.isInteger(row.stock) || row.stock < 0) {
-        throw new BadRequestException('Price and stock must be non-negative whole numbers.');
+      if (!Number.isInteger(row.price) || row.price <= 0 || !Number.isInteger(row.stock) || row.stock < 0) {
+        throw new BadRequestException('Price must be a positive whole number and stock must be a non-negative whole number.');
       }
-      if (row.salePrice != null && (!Number.isInteger(row.salePrice) || row.salePrice < 0)) throw new BadRequestException('Sale price must be a non-negative whole number.');
+      if (row.salePrice != null && (!Number.isInteger(row.salePrice) || row.salePrice <= 0 || row.salePrice >= row.price)) throw new BadRequestException('Sale price must be a positive whole number lower than the regular price.');
       return { condition: row.condition, price: row.price, salePrice: row.salePrice ?? null, stock: row.stock, isAvailable: row.isAvailable ?? true, images };
     });
   }
