@@ -63,6 +63,7 @@ export class OrdersService {
       for (const item of input.items) {
         let product = item.productId ? await tx.product.findUnique({ where: { id: item.productId }, include: { conditions: true } }) : null;
         if (!product) product = await tx.product.findFirst({ where: { OR: [{ name: { equals: item.productName.trim(), mode: 'insensitive' } }, ...(item.productId ? [{ slug: item.productId }] : [])] }, include: { conditions: true } });
+        if (item.productId && !product) throw new BadRequestException("A product in your cart is no longer available. Refresh the shop and try again.");
         let condition = product?.conditions.find(c => c.condition === (item.condition || ProductConditionType.BRAND_NEW));
         if (!condition && product && item.condition == null && product.conditions.length === 1) condition = product.conditions[0];
         if (product && !condition) throw new BadRequestException("The selected product condition is no longer available for " + product.name + ". Refresh the shop and try again.");
