@@ -1,4 +1,5 @@
 import { Args, Field, GraphQLISODateTime, ID, InputType, Mutation, ObjectType, Query, Resolver } from '@nestjs/graphql';
+import { Allow } from 'class-validator';
 import { BrandsService, BrandInputData } from './brands.service';
 import { Public } from '../auth/public.decorator';
 
@@ -13,7 +14,9 @@ class BrandRecord {
 
 @InputType()
 class BrandInput {
+  @Allow()
   @Field() name!: string;
+  @Allow()
   @Field({ nullable: true }) slug?: string;
 }
 
