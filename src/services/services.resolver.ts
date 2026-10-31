@@ -6,31 +6,18 @@ import { ServicesService, ServiceInputData } from './services.service';
 @ObjectType()
 class ServiceRecord {
   @Field(() => ID) id!: string;
-  @Allow()
   @Field() title!: string;
-  @Allow()
   @Field() slug!: string;
-  @Allow()
   @Field() category!: string;
-  @Allow()
   @Field() description!: string;
-  @Allow()
   @Field() homeDescription!: string;
-  @Allow()
   @Field() imageUrl!: string;
-  @Allow()
   @Field() icon!: string;
-  @Allow()
   @Field() whatsappMessage!: string;
-  @Allow()
   @Field() intro!: string;
-  @Allow()
   @Field() detailDescription!: string;
-  @Allow()
   @Field(() => [String]) detailItems!: string[];
-  @Allow()
   @Field(() => Int) sortOrder!: number;
-  @Allow()
   @Field() isActive!: boolean;
   @Field(() => GraphQLISODateTime) createdAt!: Date;
   @Field(() => GraphQLISODateTime) updatedAt!: Date;
@@ -38,18 +25,31 @@ class ServiceRecord {
 
 @InputType()
 class ServiceInput {
+  @Allow()
   @Field() title!: string;
+  @Allow()
   @Field({ nullable: true }) slug?: string;
+  @Allow()
   @Field({ nullable: true }) category?: string;
+  @Allow()
   @Field({ nullable: true }) description?: string;
+  @Allow()
   @Field({ nullable: true }) homeDescription?: string;
+  @Allow()
   @Field({ nullable: true }) imageUrl?: string;
+  @Allow()
   @Field({ nullable: true }) icon?: string;
+  @Allow()
   @Field({ nullable: true }) whatsappMessage?: string;
+  @Allow()
   @Field({ nullable: true }) intro?: string;
+  @Allow()
   @Field({ nullable: true }) detailDescription?: string;
+  @Allow()
   @Field(() => [String], { nullable: true }) detailItems?: string[];
+  @Allow()
   @Field(() => Int, { nullable: true }) sortOrder?: number;
+  @Allow()
   @Field({ nullable: true }) isActive?: boolean;
 }
 
