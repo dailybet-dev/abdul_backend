@@ -1,22 +1,36 @@
 import { Args, Field, GraphQLISODateTime, ID, InputType, Int, Mutation, ObjectType, Query, Resolver } from '@nestjs/graphql';
+import { Allow } from 'class-validator';
 import { Public } from '../auth/public.decorator';
 import { ServicesService, ServiceInputData } from './services.service';
 
 @ObjectType()
 class ServiceRecord {
   @Field(() => ID) id!: string;
+  @Allow()
   @Field() title!: string;
+  @Allow()
   @Field() slug!: string;
+  @Allow()
   @Field() category!: string;
+  @Allow()
   @Field() description!: string;
+  @Allow()
   @Field() homeDescription!: string;
+  @Allow()
   @Field() imageUrl!: string;
+  @Allow()
   @Field() icon!: string;
+  @Allow()
   @Field() whatsappMessage!: string;
+  @Allow()
   @Field() intro!: string;
+  @Allow()
   @Field() detailDescription!: string;
+  @Allow()
   @Field(() => [String]) detailItems!: string[];
+  @Allow()
   @Field(() => Int) sortOrder!: number;
+  @Allow()
   @Field() isActive!: boolean;
   @Field(() => GraphQLISODateTime) createdAt!: Date;
   @Field(() => GraphQLISODateTime) updatedAt!: Date;
