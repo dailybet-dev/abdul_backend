@@ -1,6 +1,7 @@
 import { Args, Field, GraphQLISODateTime, ID, InputType, Int, Mutation, ObjectType, Query, Resolver, registerEnumType } from '@nestjs/graphql';
 import { OrderFulfilment, OrderPaymentMethod, OrderStatus, PaymentStatus, ProductConditionType } from '@prisma/client';
 import { Public } from '../auth/public.decorator';
+import { Allow } from 'class-validator';
 import { OrdersService } from './orders.service';
 
 registerEnumType(OrderFulfilment, { name: 'OrderFulfilment' });
@@ -55,26 +56,44 @@ class OrderRecord {
 }
 @InputType()
 class OrderItemInput {
+  @Allow()
   @Field({ nullable: true }) productId?: string;
+  @Allow()
   @Field() productName!: string;
+  @Allow()
   @Field({ nullable: true }) productSku?: string;
+  @Allow()
   @Field(() => ProductConditionType, { nullable: true }) condition?: ProductConditionType;
+  @Allow()
   @Field(() => Int) quantity!: number;
+  @Allow()
   @Field(() => Int) unitPrice!: number;
 }
 @InputType()
 class CreateOrderInput {
+  @Allow()
   @Field() customerName!: string;
+  @Allow()
   @Field() customerPhone!: string;
+  @Allow()
   @Field({ nullable: true }) customerEmail?: string;
+  @Allow()
   @Field(() => OrderFulfilment) fulfilment!: OrderFulfilment;
+  @Allow()
   @Field({ nullable: true }) pickupLocation?: string;
+  @Allow()
   @Field({ nullable: true }) deliveryAddress?: string;
+  @Allow()
   @Field({ nullable: true }) deliveryArea?: string;
+  @Allow()
   @Field({ nullable: true }) deliveryNotes?: string;
+  @Allow()
   @Field(() => OrderPaymentMethod) paymentMethod!: OrderPaymentMethod;
+  @Allow()
   @Field({ nullable: true }) orderChannel?: string;
+  @Allow()
   @Field({ nullable: true }) customerNote?: string;
+  @Allow()
   @Field(() => [OrderItemInput]) items!: OrderItemInput[];
 }
 
