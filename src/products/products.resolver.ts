@@ -41,6 +41,8 @@ class ProductRecord {
 @InputType()
 class ProductConditionInput {
   @Allow()
+  @Field(() => ID, { nullable: true }) id?: string;
+  @Allow()
   @Field(() => ProductConditionType) condition!: ProductConditionType;
   @Allow()
   @Field(() => Int) price!: number;
