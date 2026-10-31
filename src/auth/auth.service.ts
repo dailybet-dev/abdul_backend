@@ -49,8 +49,11 @@ export class AuthService implements OnModuleInit {
     await this.prisma.adminSession.create({
       data: { tokenHash: this.hashToken(token), adminId: user.id, expiresAt: new Date(Date.now() + SESSION_TTL_MS) },
     });
+    // Keep the Express cookie as a compatibility fallback. The frontend's same-origin
+    // GraphQL proxy also receives this token in the upstream payload and sets its own
+    // host-only HttpOnly cookie, avoiding reliance on Apollo forwarding Set-Cookie.
     response.cookie('admin_session', token, this.cookieOptions());
-    return { id: user.id, email: user.email, displayName: user.displayName };
+    return { admin: { id: user.id, email: user.email, displayName: user.displayName }, sessionToken: token };
   }
 
   async validateSession(token: string) {
