@@ -15,4 +15,9 @@ export class SubmissionsController {
   listNewsletter(@Query('search') search = '', @Query('status') status = '') {
     return this.submissions.listNewsletter(search, status);
   }
+
+  @Get('training')
+  listTraining(@Query('search') search = '', @Query('status') status = '') {
+    return this.submissions.listTraining(search, status);
+  }
 }
