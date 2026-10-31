@@ -18,6 +18,7 @@ class AdminAccount {
 class AdminLoginPayload {
   @Field() success!: boolean;
   @Field(() => AdminAccount) admin!: AdminAccount;
+  @Field() sessionToken!: string;
 }
 
 @ObjectType()
@@ -35,9 +36,9 @@ export class AuthResolver {
   @Public()
   @Mutation(() => AdminLoginPayload)
   async login(@Args('input') input: LoginDto, @Context() context: GraphQLContext): Promise<AdminLoginPayload> {
-    const admin = await this.auth.login(input.email, input.password, context.req, context.res);
-    if (!admin) throw new UnauthorizedException('Invalid email or password.');
-    return { success: true, admin };
+    const result = await this.auth.login(input.email, input.password, context.req, context.res);
+    if (!result) throw new UnauthorizedException('Invalid email or password.');
+    return { success: true, admin: result.admin, sessionToken: result.sessionToken };
   }
 
   @Query(() => AdminAccount)
