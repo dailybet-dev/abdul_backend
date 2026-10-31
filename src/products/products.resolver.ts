@@ -2,6 +2,7 @@ import { Args, Field, GraphQLISODateTime, ID, InputType, Int, Mutation, ObjectTy
 import { ProductConditionType } from '@prisma/client';
 import { ProductsService, ProductInputData } from './products.service';
 import { Public } from '../auth/public.decorator';
+import { Allow } from 'class-validator';
 
 registerEnumType(ProductConditionType, { name: 'ProductConditionType' });
 
@@ -39,21 +40,34 @@ class ProductRecord {
 }
 @InputType()
 class ProductConditionInput {
+  @Allow()
   @Field(() => ProductConditionType) condition!: ProductConditionType;
+  @Allow()
   @Field(() => Int) price!: number;
+  @Allow()
   @Field(() => Int, { nullable: true }) salePrice?: number | null;
+  @Allow()
   @Field(() => Int) stock!: number;
+  @Allow()
   @Field({ nullable: true }) isAvailable?: boolean;
+  @Allow()
   @Field(() => [String], { nullable: true }) images?: string[];
 }
 @InputType()
 class ProductInput {
+  @Allow()
   @Field() name!: string;
+  @Allow()
   @Field({ nullable: true }) sku?: string;
+  @Allow()
   @Field({ nullable: true }) description?: string;
+  @Allow()
   @Field(() => ID, { nullable: true }) categoryId?: string | null;
+  @Allow()
   @Field(() => ID, { nullable: true }) subcategoryId?: string | null;
+  @Allow()
   @Field(() => ID, { nullable: true }) brandId?: string | null;
+  @Allow()
   @Field(() => [ProductConditionInput]) conditions!: ProductConditionInput[];
 }
 @ObjectType()
